@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- import the webpage's javascript file -->
+    <script src="scripts.js" defer></script>
+    {% endblock %}
+</head>
+
+<body onload="initPage();" class="">
+    <div class="parentBody" id="parentBody">
+        <div class="flex-container mainBody" id="mainBody">
+            <div class-"flex-item" id="mainBodyDiv">
+            {% block content %}
+                {{resp_text}}
+            {% endblock %}
+            </div>
+            <div>
+                <p class="affirmationBox" id="affirmationBox" title="A little cheering-up for you :)">loading...</p>
+            </div>
+        </div>
+    </div>
+</body>
+<footer class="footer" id="footer">
+    <div class="flex-container footerMaster" id="footerMaster">
+        <div class="flex-container footerSocialBox" id="footerSocialBox">
+            <!-- <div class="flex-item footerText">         
+        <p id="footerText">
+          This is a basic website. Nothing fancy, just getting it done.
+        </p>
+        </div> -->
+            <!-- <div class="flex-item faviconSocial"> -->
+            <a class="faviconLink" href="https://twitter.com/essninedotdev?lang=en" target="_blank"><i
+                    class="fa fa-twitter" aria-hidden="true"></i></a>
+            <!-- </div> -->
+            <!-- <div class="flex-item faviconSocial"> -->
+            <a class="faviconLink" href="https://blog.essnine.dev/" target="_blank"><i class="fa fa-tumblr"
+                    aria-hidden="true"></i></a>
+            <!-- </div><div class="flex-item faviconSocial"> -->
+            <a class="faviconLink" href="https://github.com/essnine" target="_blank"><i class="fa fa-github"
+                    aria-hidden="true"></i></a>
+            <!-- </div> -->
+        </div>
+        <div class="flex-container footerDarkMode">
+            <div class="flex-item toggleDarkMode"
+                title="I store no cookies. The night mode toggle is basic JS time checking. This site is mostly built from scratch.">
+                <label class="toggleDarkText">
+                    🌙&nbsp
+                </label>
+                <label class="switch">
+                    <input type="checkbox" onclick="goDark(true)" id="goDarkToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>
