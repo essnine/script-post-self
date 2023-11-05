@@ -28,16 +28,19 @@ And this script should be able to fulfil that role, so I can maybe start
 actually writing and stop ruminating so much.
 """
 
-import docutils
 import json
 import logging
 import os
+import shutil
 
 from collections import defaultdict
+from docutils.core import publish_parts
+from rst2html5_ import HTML5Writer
+from markdown import markdown
 from typing import List, Dict, Tuple
 from pathlib import Path, PosixPath
 
-
+SUPPORTED_TYPES = {".py", ".rst", ".md"}
 CURDIR_PATH = Path.cwd()
 EXEC_PATH = Path(__file__).parent.absolute()
 if CURDIR_PATH == EXEC_PATH:
@@ -45,6 +48,12 @@ if CURDIR_PATH == EXEC_PATH:
     SOURCE_PATH = Path(os.path.join(CURDIR_PATH, "source"))
 else:
     OUTPUT_PATH, SOURCE_PATH = CURDIR_PATH, CURDIR_PATH
+BASE_TEMPLATE_PATH = Path(os.path.join(CURDIR_PATH, "template/base.html"))
+BASE_TEMPLATE_STYLE_N_SCRIPT = (
+    Path(os.path.join(CURDIR_PATH, "template/style.css")),
+    Path(os.path.join(CURDIR_PATH, "template/script.js")),
+)
+
 logger = logging.getLogger("sitemake")
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -77,21 +86,19 @@ def parse_source_files(dir_path: str) -> Tuple[Dict, Dict]:
     for file_item in file_list:
         if not isinstance(file_item, PosixPath):
             continue
-        if file_item.suffix.lower() in {".py", ".md"}:
+        if file_item.suffix.lower() in {".py", ".md", ".rst"}:
             logger.debug("valid file: ", file_item.name)
-            paths_dir_map[str(file_item.parent.relative_to(CURDIR_PATH))].append(file_item.name)
-
+            dir_rel_path = str(file_item.parent.relative_to(CURDIR_PATH))
+            paths_dir_map[dir_rel_path].append(file_item.name)
     logger.debug(paths_dir_map)
     return paths_dir_map
 
 
-def clear_output_directory(output_base_dir):
+def clear_output_directory(output_base_dir: Path):
     dir_list = []
     file_list = []
     paths_dir_map = defaultdict(list)
     for item in output_base_dir.iterdir():
-        if item.name[0] == ".":
-            continue
         if item.is_dir():
             dir_list.append(item)
         elif item.is_file():
@@ -111,6 +118,21 @@ def clear_output_directory(output_base_dir):
     return
 
 
+def handle_file_parse(output_base_dir, inpath: Path, outpath: Path):
+    for path in BASE_TEMPLATE_STYLE_N_SCRIPT:
+        op_name = os.path.join(path.name)  # TODO add code here to copy the css and js file into the output folder
+        shutil.copy(path, outpath)
+
+    base_template_html = BASE_TEMPLATE_PATH.read_text()
+    if inpath.suffix in (".rst", ".py"):
+        html = publish_parts(writer=HTML5Writer(), source=inpath.read_text())["body"]
+    else:
+        parsed_doc = inpath.read_text()
+        html = markdown(parsed_doc)
+    outpath.write_text(base_template_html.format(body_content=html))
+    pass
+
+
 def generate_output_paths(source_map: Dict[str, str]):
     output_map = {}
 
@@ -126,20 +148,25 @@ def generate_output_paths(source_map: Dict[str, str]):
                     filename,
                 )
             )
-            output_path_obj = Path(os.path.join(output_dir_path, filename))
-            output_path_obj.touch()
-            output_path_obj.rename(output_path_obj.with_suffix(".html"))
-            output_map[source_file_path] = str(output_path_obj)
-    logging.info(output_map)
+            source_file_path_abs = os.path.realpath(source_file_path)
+            output_path_object = Path(os.path.join(output_dir_path, filename))
+            output_path_object.touch()
+            output_path_object = output_path_object.rename(output_path_object.with_suffix(".html"))
+            handle_file_parse(Path(source_file_path_abs), output_path_object)
+            output_map[str(output_path_object)] = source_file_path_abs
+    return output_map
 
 
-# TODO: generate nav first, create directories, then populate files and use
+# TODO: first create directories, then generate nav, then populate files, and finally use
 # nav to verify that all files have been created
-def generate_nav(nav_map: dict = {}) -> Dict:
-    return {}
+def generate_nav(output_base_dir, output_map: dict = {}) -> Dict:
+    nav_map = defaultdict(Dict)
+    nav_abspath = lambda x: f"Index/{os.path.relpath(x, output_base_dir)}"
+    nav_list = [nav_abspath(k) for k in output_map.keys()]
+    return nav_list
 
 
-def generate_site(project_path):
+def parse_dir_paths(project_path):
     # static site component stuff will go here
     paths_dir_map = parse_source_files(project_path)
     logger.info(json.dumps(paths_dir_map, indent=4))
@@ -183,11 +210,12 @@ def setup_output():
 
 def main():
     source_project = setup_output()
-    source_paths, output_base_dir = generate_site(source_project)
+    source_paths, output_base_dir = parse_dir_paths(source_project)
     if output_base_dir.exists():
         clear_output_directory(output_base_dir)
         os.rmdir(output_base_dir)
     output_paths = generate_output_paths(source_paths)
+    nav = generate_nav(output_base_dir, output_paths)
 
 
 if __name__ == "__main__":
