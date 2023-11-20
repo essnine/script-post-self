@@ -32,13 +32,15 @@ import json
 import logging
 import os
 import shutil
+import signal
+import sys
 
 from collections import defaultdict
 from docutils.core import publish_parts
-from rst2html5_ import HTML5Writer
 from markdown import markdown
-from typing import List, Dict, Tuple
 from pathlib import Path, PosixPath
+from rst2html5_ import HTML5Writer
+from typing import List, Dict, Tuple
 
 SUPPORTED_TYPES = {".py", ".rst", ".md"}
 CURDIR_PATH = Path.cwd()
@@ -118,11 +120,7 @@ def clear_output_directory(output_base_dir: Path):
     return
 
 
-def handle_file_parse(output_base_dir, inpath: Path, outpath: Path):
-    for path in BASE_TEMPLATE_STYLE_N_SCRIPT:
-        op_name = os.path.join(path.name)  # TODO add code here to copy the css and js file into the output folder
-        shutil.copy(path, outpath)
-
+def handle_file_parse(inpath: Path, outpath: Path):
     base_template_html = BASE_TEMPLATE_PATH.read_text()
     if inpath.suffix in (".rst", ".py"):
         html = publish_parts(writer=HTML5Writer(), source=inpath.read_text())["body"]
@@ -133,9 +131,16 @@ def handle_file_parse(output_base_dir, inpath: Path, outpath: Path):
     pass
 
 
-def generate_output_paths(source_map: Dict[str, str]):
-    output_map = {}
+def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
+    if not output_base_dir.exists():
+        os.makedirs(output_base_dir)
+    for path in BASE_TEMPLATE_STYLE_N_SCRIPT:
+        op_name = os.path.join(
+            output_base_dir, path.name
+        )  # TODO add code here to copy the css and js file into the output folder
+        shutil.copy(path, op_name)
 
+    output_map = {}
     for dir, file_list in source_map.items():
         output_dir_path = Path(os.path.join(CURDIR_PATH, f"output{dir[6:]}"))
         if not output_dir_path.exists():
@@ -214,9 +219,18 @@ def main():
     if output_base_dir.exists():
         clear_output_directory(output_base_dir)
         os.rmdir(output_base_dir)
-    output_paths = generate_output_paths(source_paths)
+    output_paths = generate_output_paths(output_base_dir, source_paths)
     nav = generate_nav(output_base_dir, output_paths)
 
 
+def handle_signal(sig, frame):
+    print("\nHandled SIGINT\nExiting now...")
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, handle_signal)
+
+
 if __name__ == "__main__":
+    print("Print Ctrl+C to exit")
     main()
