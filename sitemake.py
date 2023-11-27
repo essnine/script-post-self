@@ -51,9 +51,10 @@ if CURDIR_PATH == EXEC_PATH:
 else:
     OUTPUT_PATH, SOURCE_PATH = CURDIR_PATH, CURDIR_PATH
 BASE_TEMPLATE_PATH = Path(os.path.join(CURDIR_PATH, "template/base.html"))
-BASE_TEMPLATE_STYLE_N_SCRIPT = (
+BASE_TEMPLATE_DEPENDENCIES = (
     Path(os.path.join(CURDIR_PATH, "template/style.css")),
-    Path(os.path.join(CURDIR_PATH, "template/script.js")),
+    Path(os.path.join(CURDIR_PATH, "template/scripts.js")),
+    Path(os.path.join(CURDIR_PATH, "template/8BITWONDERNominal.woff2")),
 )
 
 logger = logging.getLogger("sitemake")
@@ -66,7 +67,7 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
-def parse_source_files(dir_path: str) -> Tuple[Dict, Dict]:
+def parse_source_files(dir_path: str) -> Dict:
     PathObj = Path(dir_path)
     dir_list = []
     file_list = []
@@ -112,7 +113,9 @@ def clear_output_directory(output_base_dir: Path):
         os.rmdir(dir_item)
     for file_item in file_list:
         if not isinstance(file_item, PosixPath):
-            raise Exception("Could not delete file, Invalid filepath: {}".format(str(file_item)))
+            raise Exception(
+                "Could not delete file, Invalid filepath: {}".format(str(file_item))
+            )
         else:
             os.remove(file_item)
 
@@ -126,7 +129,12 @@ def handle_file_parse(inpath: Path, outpath: Path):
         html = publish_parts(writer=HTML5Writer(), source=inpath.read_text())["body"]
     else:
         parsed_doc = inpath.read_text()
-        html = markdown(parsed_doc)
+
+        parsed_text = []
+        for line in parsed_doc.split("\n"):
+            parsed_text.append(line.replace(".md)", ".html)"))
+
+        html = markdown("\n".join(parsed_text))
     outpath.write_text(base_template_html.format(body_content=html))
     pass
 
@@ -134,10 +142,8 @@ def handle_file_parse(inpath: Path, outpath: Path):
 def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
     if not output_base_dir.exists():
         os.makedirs(output_base_dir)
-    for path in BASE_TEMPLATE_STYLE_N_SCRIPT:
-        op_name = os.path.join(
-            output_base_dir, path.name
-        )  # TODO add code here to copy the css and js file into the output folder
+    for path in BASE_TEMPLATE_DEPENDENCIES:
+        op_name = os.path.join(output_base_dir, path.name)
         shutil.copy(path, op_name)
 
     output_map = {}
@@ -156,7 +162,9 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
             source_file_path_abs = os.path.realpath(source_file_path)
             output_path_object = Path(os.path.join(output_dir_path, filename))
             output_path_object.touch()
-            output_path_object = output_path_object.rename(output_path_object.with_suffix(".html"))
+            output_path_object = output_path_object.rename(
+                output_path_object.with_suffix(".html")
+            )
             handle_file_parse(Path(source_file_path_abs), output_path_object)
             output_map[str(output_path_object)] = source_file_path_abs
     return output_map

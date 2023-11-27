@@ -3,3 +3,5 @@ __pycache__/
 
 output/*
 source/*
+.sublime-workspace
+pyrightconfig.json

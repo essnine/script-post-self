@@ -51,27 +51,27 @@ const affirmations = [
 var isDay = false;
 var darkMode = false;
 
-function goDark(setInMemory=false) {
+function goDark(setInMemory = false) {
     var bodyElement = document.body;
     bodyElement.classList.toggle("dark-mode");
 
     var footerElement = document.getElementById("mainBodyDiv");
     footerElement.classList.toggle("dark-mode");
 
-    var footerElement = document.getElementById("footerSocialBox");
+    var footerElement = document.getElementById("footerMaster");
     footerElement.classList.toggle("dark-mode");
 
     var affirmationElement = document.getElementById("affirmationBox");
     affirmationElement.classList.toggle("dark-mode");
-    
-    if (setInMemory == true){
-        if (affirmationElement.classList.contains("dark-mode")){
+
+    if (setInMemory == true) {
+        if (affirmationElement.classList.contains("dark-mode")) {
             darkMode = true;
         } else {
             darkMode = false;
         }
-    localStorage.setItem("darkMode", JSON.stringify(darkMode));
-    localStorage.setItem("manualSetting", JSON.stringify(true));   
+        localStorage.setItem("darkMode", JSON.stringify(darkMode));
+        localStorage.setItem("manualSetting", JSON.stringify(true));
     }
 }
 
@@ -80,7 +80,7 @@ function goDark(setInMemory=false) {
 // (and get it working too, obvsly)
 
 function checkStorageForConfig() {
-    if (typeof(Storage) !== "undefined") {
+    if (typeof (Storage) !== "undefined") {
         // Code for checking localStorage/sessionStorage availability.
         var configDarkMode = JSON.parse(localStorage.getItem("darkMode"));
         var configManualSetting = JSON.parse(localStorage.getItem("manualSetting"));
@@ -108,10 +108,10 @@ function checkStorageForConfig() {
             darkModeCheck();
         }
 
-      } else {
+    } else {
         // Sorry! No Web Storage support..
         darkModeCheck();
-      }
+    }
 }
 
 function darkModeCheck() {
@@ -134,7 +134,7 @@ function darkModeCheck() {
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
-  }
+}
 
 function setAffirmation() {
     affirmationIndex = affirmations.length;
