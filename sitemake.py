@@ -153,6 +153,9 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
             os.makedirs(output_dir_path)
 
         for filename in file_list:
+            # filenames in output are being converted to lowercase.
+            # it's just easier dealing with it this way.
+            output_filename = filename.lower()
             source_file_path = "/".join(
                 (
                     dir,
@@ -160,7 +163,7 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
                 )
             )
             source_file_path_abs = os.path.realpath(source_file_path)
-            output_path_object = Path(os.path.join(output_dir_path, filename))
+            output_path_object = Path(os.path.join(output_dir_path, output_filename))
             output_path_object.touch()
             output_path_object = output_path_object.rename(
                 output_path_object.with_suffix(".html")
@@ -172,7 +175,7 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
 
 # TODO: first create directories, then generate nav, then populate files, and finally use
 # nav to verify that all files have been created
-def generate_nav(output_base_dir, output_map: dict = {}) -> Dict:
+def generate_nav(output_base_dir, output_map: dict = {}) -> List:
     nav_map = defaultdict(Dict)
     nav_abspath = lambda x: f"Index/{os.path.relpath(x, output_base_dir)}"
     nav_list = [nav_abspath(k) for k in output_map.keys()]
@@ -216,7 +219,7 @@ def setup_output():
     print(f"TARGET path: {str(SOURCE_PATH)}")
 
     print("Checking source path contents...")
-    source_list = list(str(i) for i in SOURCE_PATH.iterdir() if i.is_dir())
+    source_list = tuple(str(i) for i in SOURCE_PATH.iterdir() if i.is_dir())
     source_path = confirm_source_path(source_list)
     return source_path
 
@@ -229,6 +232,7 @@ def main():
         os.rmdir(output_base_dir)
     output_paths = generate_output_paths(output_base_dir, source_paths)
     nav = generate_nav(output_base_dir, output_paths)
+    logger.info(json.dumps(nav, indent=4))
 
 
 def handle_signal(sig, frame):

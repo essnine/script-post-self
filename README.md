@@ -1,4 +1,2 @@
 # README
-potential python tomfoolery
-
-TODO: update here, and make note of the much simpler goals I have right now
+My static site generator script. It consumes markdown, turns it into HTML. I'll write more later.
