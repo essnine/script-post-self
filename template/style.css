@@ -38,8 +38,8 @@
 }
 
 body {
-  background-image: url(img/pattern.svg);
-  background-size: 350px 175px;
+  background-image: url(pattern-min.svg);
+  background-size: 175px 175px;
   background-color: white;
   background-position: right;
 }
@@ -207,10 +207,12 @@ a {
   justify-content: right;
 }
 
+
 body.dark-mode {
-  background-image: url(img/pattern-inverted.svg);
-  background-size: 350px 175px;
-  background-color: #1D1D1D;
+  background-image: url(pattern-min.svg);
+  background-size: 175px 175px;
+  background-color: #1D1D1D0A;
+  background-blend-mode: difference;
 }
 
 /* The switch - the box around the slider */

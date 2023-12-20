@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="icon" type="image/png" href="favicon.png" />
 
     <!-- import the webpage's stylesheet -->
     <link rel="stylesheet" href="/style.css">
@@ -16,7 +16,7 @@
 <body onload="initPage();" class="">
     <div class="parentBody" id="parentBody">
         <div class="flex-container mainBody" id="mainBody">
-            <div class-"flex-item" id="mainBodyDiv">
+            <div class="flex-item" id="mainBodyDiv">
                 {body_content}
             </div>
             <div>
@@ -30,12 +30,12 @@
         <div class="flex-container footerDarkMode">
             <div class="flex-item toggleDarkMode"
                 title="I store no cookies. The night mode toggle is basic JS time checking. This site is mostly built from scratch.">
-                <label class="toggleDarkText">
-                    🌙&nbsp
-                </label>
                 <label class="switch">
                     <input type="checkbox" onclick="goDark(true)" id="goDarkToggle">
                     <span class="slider round"></span>
+                </label>
+                <label class="toggleDarkText">
+                    🌙&nbsp
                 </label>
             </div>
         </div>

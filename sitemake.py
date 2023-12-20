@@ -31,6 +31,7 @@ actually writing and stop ruminating so much.
 import json
 import logging
 import os
+import re
 import shutil
 import signal
 import sys
@@ -55,6 +56,8 @@ BASE_TEMPLATE_DEPENDENCIES = (
     Path(os.path.join(CURDIR_PATH, "template/style.css")),
     Path(os.path.join(CURDIR_PATH, "template/scripts.js")),
     Path(os.path.join(CURDIR_PATH, "template/8BITWONDERNominal.woff2")),
+    Path(os.path.join(CURDIR_PATH, "template/favicon.png")),
+    Path(os.path.join(CURDIR_PATH, "template/pattern-min.svg")),
 )
 
 logger = logging.getLogger("sitemake")
@@ -153,9 +156,6 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
             os.makedirs(output_dir_path)
 
         for filename in file_list:
-            # filenames in output are being converted to lowercase.
-            # it's just easier dealing with it this way.
-            output_filename = filename.lower()
             source_file_path = "/".join(
                 (
                     dir,
@@ -163,7 +163,7 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
                 )
             )
             source_file_path_abs = os.path.realpath(source_file_path)
-            output_path_object = Path(os.path.join(output_dir_path, output_filename))
+            output_path_object = Path(os.path.join(output_dir_path, filename))
             output_path_object.touch()
             output_path_object = output_path_object.rename(
                 output_path_object.with_suffix(".html")
