@@ -92,7 +92,7 @@ def parse_source_files(dir_path: str) -> Dict:
     for file_item in file_list:
         if not isinstance(file_item, PosixPath):
             continue
-        if file_item.suffix.lower() in {".py", ".md", ".rst"}:
+        if file_item.suffix.lower() in {".py", ".md", ".rst", ".pdf"}:
             logger.debug("valid file: ", file_item.name)
             dir_rel_path = str(file_item.parent.relative_to(CURDIR_PATH))
             paths_dir_map[dir_rel_path].append(file_item.name)
@@ -128,17 +128,22 @@ def clear_output_directory(output_base_dir: Path):
 
 def handle_file_parse(inpath: Path, outpath: Path):
     base_template_html = BASE_TEMPLATE_PATH.read_text()
-    if inpath.suffix in (".rst", ".py"):
-        html = publish_parts(writer=HTML5Writer(), source=inpath.read_text())["body"]
+    if inpath.suffix != ".pdf":
+        if inpath.suffix in (".rst", ".py"):
+            html = publish_parts(writer=HTML5Writer(), source=inpath.read_text())[
+                "body"
+            ]
+        else:
+            parsed_doc = inpath.read_text()
+
+            parsed_text = []
+            for line in parsed_doc.split("\n"):
+                parsed_text.append(line.replace(".md)", ".html)"))
+
+            html = markdown("\n".join(parsed_text))
+        outpath.write_text(base_template_html.format(body_content=html))
     else:
-        parsed_doc = inpath.read_text()
-
-        parsed_text = []
-        for line in parsed_doc.split("\n"):
-            parsed_text.append(line.replace(".md)", ".html)"))
-
-        html = markdown("\n".join(parsed_text))
-    outpath.write_text(base_template_html.format(body_content=html))
+        outpath.write_bytes(inpath.read_bytes())
     pass
 
 
@@ -165,9 +170,10 @@ def generate_output_paths(output_base_dir, source_map: Dict[str, str]):
             source_file_path_abs = os.path.realpath(source_file_path)
             output_path_object = Path(os.path.join(output_dir_path, filename))
             output_path_object.touch()
-            output_path_object = output_path_object.rename(
-                output_path_object.with_suffix(".html")
-            )
+            if Path(source_file_path_abs).suffix != ".pdf":
+                output_path_object = output_path_object.rename(
+                    output_path_object.with_suffix(".html")
+                )
             handle_file_parse(Path(source_file_path_abs), output_path_object)
             output_map[str(output_path_object)] = source_file_path_abs
     return output_map
